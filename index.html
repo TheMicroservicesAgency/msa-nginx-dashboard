@@ -1,0 +1,276 @@
+<!doctype html>
+<html>
+<head>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+
+    <title>Nginx Stats</title>
+
+    <link rel="stylesheet" type="text/css" href="css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="css/pure.min.css">
+    <link rel="stylesheet" type="text/css" href="css/site.css">
+</head>
+
+<body>
+    <div class="content">
+        <div class="pure-g">
+            <div class="pure-u-1">
+
+                <h1>Nginx Stats</h1>
+                <div id=monitor></div>
+                <!-- <div id=update class=update>
+                    <strong>update interval:</strong>
+                    <select id=refresh onchange=vtsSetInterval(this.value*1000)>
+                      <option value=1>1</option>
+                      <option value=5>5</option>
+                      <option value=10>10</option>
+                      <option value=1000>10000</option>
+                  </select>
+                    <strong>sec</strong>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</body>
+
+
+<script>
+    var vtsStatusURI = "http://localhost/status/format/json",
+        vtsUpdateInterval = 1000,
+        vtsUpdate;
+    var aPs = (function() {
+        var a = [];
+        var b = {
+            last: undefined,
+            period: undefined
+        };
+        return {
+            getValue: function(c, d) {
+                if (typeof a[c] === "undefined") {
+                    a[c] = d;
+                    return "N/A"
+                } else {
+                    var e = d - a[c];
+                    a[c] = d;
+                    return Math.floor(e * 1000 / b.period)
+                }
+            },
+            refresh: function(c) {
+                b.period = c - b.last;
+                b.last = c
+            }
+        }
+    })();
+
+    function mTh(b) {
+        var a = 1000,
+            c = 60,
+            f = c * c,
+            g = f * 24,
+            l = "";
+        if (b < a) {
+            return b + "ms"
+        }
+        if (b < (a * c)) {
+            return Math.floor(b / a) + "." + Math.floor((b % a) / 10) + "s"
+        }
+        var k = Math.floor(b / (g * a));
+        if (k) {
+            l += k + "d "
+        }
+        var i = Math.floor((b % (g * a)) / (f * a));
+        if (k || i) {
+            l += i + "h "
+        }
+        var e = Math.floor(((b % (g * a)) % (f * a)) / (c * a));
+        if (k || i || e) {
+            l += e + "m "
+        }
+        var j = Math.floor((((b % (g * a)) % (f * a)) % (c * a)) / a);
+        return l + j + "s"
+    }
+
+    function bTh(a) {
+        var c = 1024;
+        if (typeof a !== "number") {
+            return a
+        }
+        if (a < c) {
+            return a + " B"
+        }
+        if (a < (c * c)) {
+            return (a / c).toFixed(1) + " KiB"
+        }
+        if (a < (c * c * c)) {
+            return (a / (c * c)).toFixed(1) + " MiB"
+        }
+        return (a / (c * c * c)).toFixed(2) + " GiB"
+    }
+
+    function sTh(a, e) {
+        var c;
+        if (!a && !e) {
+            c = "up"
+        } else {
+            if (e) {
+                c = "down"
+            } else {
+                c = "backup"
+            }
+        }
+        return c
+    }
+
+    function template(c) {
+
+        aPs.refresh(c.nowMsec);
+
+        var page = '<div id="serverInfos">' +
+            '<h2></h2> ' +
+            '<table class="pure-table">  ' +
+            '  <thead>' +
+            '    <tr> ' +
+            '     <th>Active Connections</th>' +
+            '     <th>Requests / Second</th>' +
+            '     <th>Total Requests</th>' +
+            // '     <th>Version</th>    ' +
+            '     <th>Uptime</th>     ' +
+            '   </tr>' +
+            '  </thead>' +
+            '  <tbody>';
+
+        page += "<td>" + c.connections.active + "</td>";
+        page += "<td>" + aPs.getValue("serverInfos.connections.requests", c.connections.requests) + "</td>";
+        page += "<td>" + c.connections.requests + "</td>";
+        // page += "<td>" + c.nginxVersion + "</td>"
+        page += "<td>" + mTh(c.nowMsec - c.loadMsec) + "</td>";
+        page += "</tr>";
+
+        page += "</tbody></table></div>";
+
+        var j = '<div id="serverZones">' +
+            '<h2>Status codes</h2>';
+
+        var r = '<table  class="pure-table">' +
+            ' <thead>' +
+            '   <tr>' +
+            // '     <th>1XX</th> ' +
+            '     <th>HTTP 2XX</th> ' +
+            '     <th>HTTP 3XX</th> ' +
+            '     <th>HTTP 4XX</th> ' +
+            '     <th>HTTP 5XX</th>' +
+            '   </tr> ' +
+            '  </thead> ' +
+            '<tbody>';
+
+        page += j + r;
+
+        var zone = "*";
+        var h = c.serverZones[zone];
+        var m = "serverZones.server.*";
+
+        // Append the # of reponses per status code
+        for (var b in h.responses) {
+            if (b != "1xx") {
+                page += "<td>";
+                page += (h.responses[b] + h.overCounts.maxIntegerSize * h.overCounts[b]);
+                page += "</td>";
+            }
+            if (b == "5xx") {
+                break
+            }
+        }
+        page += '</table>';
+        page += '<h2>Traffic Data</h2>';
+        page += '<table  class="pure-table">' +
+            ' <thead>' +
+            '   <tr>' +
+            '     <th>Uploaded / Second</th> ' +
+            '     <th>Received / Second</th> ' +
+            '     <th>Uploaded Total</th> ' +
+            '     <th>Received Total</th> ' +
+            '   </tr> ' +
+            '  </thead> ' +
+            '<tbody>';
+
+        var trafficSentPerSec = bTh(aPs.getValue(m + ".outBytes", h.outBytes));
+        page += "<td>" + trafficSentPerSec + "</td>";
+
+        var trafficReceivedPerSec = bTh(aPs.getValue(m + ".inBytes", h.inBytes))
+        page += "<td>" + trafficReceivedPerSec + "</td>";
+
+        var trafficSent = bTh(h.outBytes + h.overCounts.maxIntegerSize * h.overCounts.outBytes);;
+        page += "<td>" + trafficSent + "</td>";
+
+        var trafficReceived = bTh(h.inBytes + h.overCounts.maxIntegerSize * h.overCounts.inBytes);
+        page += "<td>" + trafficReceived + "</td>";
+
+        page += '</table>';
+        page += '<h2>Cache </h2>';
+
+        page += '<table  class="pure-table">' +
+            ' <thead>' +
+            '   <tr>' +
+            '     <th>Hit</th> ' +
+            '     <th>Miss</th> ' +
+            '     <th>Bypass</th> ' +
+            '     <th>Expired</th> ' +
+            '   </tr> ' +
+            '  </thead> ' +
+            '<tbody>';
+
+        page += "<td>" + (h.responses['hit'] + h.overCounts.maxIntegerSize * h.overCounts['hit']) + "</td>";
+        page += "<td>" + (h.responses['miss'] + h.overCounts.maxIntegerSize * h.overCounts['miss']) + "</td>";
+        page += "<td>" + (h.responses['bypass'] + h.overCounts.maxIntegerSize * h.overCounts['bypass']) + "</td>";
+        page += "<td>" + (h.responses['expired'] + h.overCounts.maxIntegerSize * h.overCounts['expired']) + "</td>";
+        // Cache
+
+        page += "</tr></tbody>";
+        page += "</table>";
+
+        page += '<table  class="pure-table">' +
+            ' <thead>' +
+            '   <tr>' +
+            '     <th>Stale</th> ' +
+            '     <th>Updating</th> ' +
+            '     <th>Revalidated</th> ' +
+            '     <th>Scarce</th> ' +
+            '   </tr> ' +
+            '  </thead> ' +
+            '<tbody>';
+
+        page += "<td>" + (h.responses['stale'] + h.overCounts.maxIntegerSize * h.overCounts['stale']) + "</td>";
+        page += "<td>" + (h.responses['updating'] + h.overCounts.maxIntegerSize * h.overCounts['updating']) + "</td>";
+        page += "<td>" + (h.responses['revalidated'] + h.overCounts.maxIntegerSize * h.overCounts['revalidated']) + "</td>";
+        page += "<td>" + (h.responses['scarce'] + h.overCounts.maxIntegerSize * h.overCounts['scarce']) + "</td>";
+        page += "</tr></tbody>";
+        page += "</table>";
+
+        page += "</div>";
+        return page
+    }
+
+    function vtsGetData() {
+        var a = document.getElementById("monitor");
+        var b = new XMLHttpRequest;
+        b.onload = function() {
+            if (this.status != 200) {
+                return
+            }
+            a.innerHTML = template(JSON.parse(this.responseText))
+        };
+        b.open("GET", vtsStatusURI);
+        b.send()
+    }
+
+    function vtsSetInterval(a) {
+        clearInterval(vtsUpdate);
+        vtsUpdate = setInterval(vtsGetData, a)
+    }
+    // document.getElementById("jsonUri").href = vtsStatusURI;
+    vtsGetData();
+    vtsSetInterval(1000);
+</script>
+
+</html>

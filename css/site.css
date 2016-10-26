@@ -1,0 +1,91 @@
+/*
+ * CSS that is applied to every page on the website
+ */
+@charset "utf-8";
+
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:300');
+
+::selection {
+  background: #0bbf4e; /* WebKit/Blink Browsers */
+}
+::-moz-selection {
+  background: #0bbf4e; /* Gecko Browsers */
+}
+
+.content {
+    margin: 0 auto;
+    padding: 0 2em;
+    max-width: 80%;
+    margin-bottom: 50px;
+    line-height: 1.6em;
+}
+
+body {
+  background: #282A2E;
+  color: white;
+}
+
+h1 {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 2em;
+  font-weight: 400;
+  line-height: 1.25em;
+  margin: 0;
+  padding-top: 0.75em;
+  padding-bottom: 0.15em;
+}
+
+h2 {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1.5em;
+  font-weight: 400;
+  line-height: 1.25em;
+  margin: 0;
+  padding-top: 0.75em;
+  padding-bottom: 1.0em;
+}
+
+a {
+  color: #0bbf4e;
+  text-decoration: none;
+  transition: color 0.1s linear;
+}
+
+a:hover {
+  color: white;
+  background: #0bbf4e;
+  transition: all 0.15s linear;
+}
+
+.pure-table {
+
+  border-color: #3c3c3c;
+}
+
+.pure-table th {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1.0em;
+  font-weight: 300;
+  border-color: #3c3c3c;
+  background-color: transparent;
+  color: #0bbf4e;
+}
+
+.pure-table td {
+  line-height: 1em;
+  border-color: #3c3c3c;
+  min-width: 4em;
+  width: 10em;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 2.0em;
+  font-weight: 300;
+  text-align: center;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.pure-table thead {
+  text-align: center;
+  background: none;
+  cursor: white;
+}
