@@ -1,3 +1,0 @@
-[submodule "nginx-module-vts"]
-	path = nginx-module-vts
-	url = git@github.com:TheMicroservicesAgency/nginx-module-vts.git
