@@ -4,9 +4,7 @@
     <meta content="IE=edge" http-equiv="X-UA-Compatible">
     <meta charset="utf-8">
     <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
-
     <title>Nginx Stats</title>
-
     <link rel="stylesheet" type="text/css" href="css/normalize.css">
     <link rel="stylesheet" type="text/css" href="css/pure.min.css">
     <link rel="stylesheet" type="text/css" href="css/site.css">
@@ -16,24 +14,12 @@
     <div class="content">
         <div class="pure-g">
             <div class="pure-u-1">
-
                 <h1>Nginx Stats</h1>
                 <div id=monitor></div>
-                <!-- <div id=update class=update>
-                    <strong>update interval:</strong>
-                    <select id=refresh onchange=vtsSetInterval(this.value*1000)>
-                      <option value=1>1</option>
-                      <option value=5>5</option>
-                      <option value=10>10</option>
-                      <option value=1000>10000</option>
-                  </select>
-                    <strong>sec</strong>
-                </div> -->
             </div>
         </div>
     </div>
 </body>
-
 
 <script>
     var vtsStatusURI = "http://localhost/status/format/json",
@@ -268,7 +254,6 @@
         clearInterval(vtsUpdate);
         vtsUpdate = setInterval(vtsGetData, a)
     }
-    // document.getElementById("jsonUri").href = vtsStatusURI;
     vtsGetData();
     vtsSetInterval(1000);
 </script>

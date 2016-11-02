@@ -1,8 +1,4 @@
-/*
- * CSS that is applied to every page on the website
- */
 @charset "utf-8";
-
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:300');
 
 ::selection {
